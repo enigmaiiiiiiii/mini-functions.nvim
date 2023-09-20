@@ -1,2 +1,1 @@
-echo "mini functions loaded"
-command! MiniHelloWorld lua require('mini-functions').hello_world()
+command! BufferPath lua require('mini-functions').get_buffer_path()

@@ -1,23 +1,16 @@
+
+local replace_with_clipboard = require('mini-replace-with-clipboard').replace_with_clipboard
+local insert_markdown_TOC = require('mini-mdTOC').InsertMarkdownTOC
+local get_buffer_path = require('mini-bufferpath').buffer_path
+
 local M = {}
 
-local function BufferPath()
-  local full_path = vim.fn.expand('%:p')
-  vim.fn.setreg('+', full_path)
-  print(full_path)
-end
+M.insert_markdown_TOC =  insert_markdown_TOC
+M.replace_with_clipboard= replace_with_clipboard
+M.get_buffer_path = get_buffer_path
 
-vim.api.nvim_create_user_command(
-  "Bufferpath",
-  -- "let @+ = expand('%:p')",
-  BufferPath,
-  {bang = false, nargs = 0}
-)
-
-local function hello_world()
-  print("hello world!")
-end
-
-M.BufferPath = BufferPath
-M.hello_world = hello_world
+vim.api.nvim_set_keymap("n", "cp", ":lua ReplaceWithClipboard()<CR>", {noremap = true, silent = true})
+-- vim.api.nvim_set_keymap("n", "<leader>mt", ":lua InsertMarkdownTOC()<CR>", {noremap = true, silent = true})
+vim.keymap.set('n', '<leader>mt', M.insert_markdown_TOC, { noremap = true, silent = true })
 
 return M
