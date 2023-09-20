@@ -1,6 +1,6 @@
 local M = {}
 
-local function GenerateMarkdownTOC()
+local function generate_markdown_TOC()
 	local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
 	local toc = {}
 	for _, line in ipairs(lines) do
@@ -14,8 +14,8 @@ local function GenerateMarkdownTOC()
 	return toc
 end
 
-M.InsertMarkdownTOC = function()
-	local toc = GenerateMarkdownTOC()
+M.insert_markdown_TOC = function()
+	local toc = generate_markdown_TOC()
 	local row, _ = unpack(vim.api.nvim_win_get_cursor(0))
 	vim.api.nvim_buf_set_lines(0, row, row, false, toc)
 end

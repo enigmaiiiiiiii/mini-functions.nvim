@@ -1,7 +1,7 @@
 
-local replace_with_clipboard = require('mini-replace-with-clipboard').replace_with_clipboard
-local insert_markdown_TOC = require('mini-mdTOC').InsertMarkdownTOC
-local get_buffer_path = require('mini-bufferpath').get_buffer_path
+local replace_with_clipboard = require('mini-functions.mini-replace-with-clipboard').replace_with_clipboard
+local insert_markdown_TOC = require('mini-functions.mini-mdTOC').insert_markdown_TOC
+local get_buffer_path = require('mini-functions.mini-bufferpath').get_buffer_path
 
 local M = {}
 
