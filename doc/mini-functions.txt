@@ -1,0 +1,18 @@
+# mini.functions
+
+## get buffer path
+
+command: `:BufferPath`
+
+## generate markdown content table
+
+require('mini-functions').insert_markdown_TOC
+
+## replace word with clipboard
+
+require('mini-functions').replace_with_clipboard
+
+## no circle buffer navigation
+
+require('mini-functions').no_circle_buffer_navigation
+
