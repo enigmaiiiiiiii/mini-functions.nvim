@@ -28,17 +28,21 @@ local is_initialized = false
 
 local builtin_modules = {
   funk = {
+    module_path = "mini-functions.funk",
     enable = true,
     keymaps = {
       replace_with_clipboard = 'cp',
       insert_markdown_TOC = '<leader>mt',
     },
-  }
+  },
 }
 
 ---@type TSModule[]
 local queued_modules_defs = {}
 
+---@param accumulator fun(name: string, module: TSModule, path: string, root: {[string]: TSModule}) called for each module
+  -- @param name string
+  -- @param path string
 ---@param root {[string]: TSModule} | nil
 local function recurse_modules(accumulator, root, path)
   root = root or config.modules
@@ -59,9 +63,8 @@ local function enable_module(mod)
   local module = M.get_module(mod)
   if not module then return end
 
-  M.attach_module()
+  M.attach_module(mod)
 end
-
 
 -- Resolves a module by requiring the `module_path` or using definitions
 ---@mod_name string
@@ -80,9 +83,7 @@ end
 function M.attach_module(mod_name)
   local resolved_mod = resolve_module(mod_name)
 
-  if resolved_mod then
-    resolved_mod.attach()
-  end
+  if resolved_mod then resolved_mod.attach() end
 end
 
 local function enable_all(mod)
@@ -119,6 +120,7 @@ end
 ---@param mod table|nil
 ---@return boolean
 function M.is_module(mod)
+
   return type(mod) == 'table'
     and ((type(mod.attach) == 'function' and type(mod.detach) == 'function') or type(mod.module_path) == 'string')
 end
@@ -126,21 +128,17 @@ end
 -- Defines a table of modules
 ---@param mod_defs TSModule[]
 function M.define_modules(mod_defs)
-  if not is_initialized then
-    table.insert(queued_modules_defs, mod_defs)
-  end
+  if not is_initialized then table.insert(queued_modules_defs, mod_defs) end
 
   recurse_modules(function(key, mod, _, group)
-    group[key] = vim.tbl_extend("keep", mod, {
+    group[key] = vim.tbl_extend('keep', mod, {
       enable = false,
       disable = {},
-      is_supported = function()
-        return true
-      end
+      is_supported = function() return true end,
     })
   end, mod_defs)
 
-  config.modules = vim.tbl_deep_extend("keep", config.modules, mod_defs)
+  config.modules = vim.tbl_deep_extend('keep', config.modules, mod_defs)
 end
 
 M.init = function()
@@ -150,6 +148,11 @@ M.init = function()
   for _, mod_def in ipairs(queued_modules_defs) do
     M.define_modules(mod_def)
   end
+
+  recurse_modules(function(_, _, new_path)
+    local data = utils.get_at_path(config.modules, new_path)
+    if data.enable then enable_all(new_path) end
+  end, config.modules)
 end
 
 return M
