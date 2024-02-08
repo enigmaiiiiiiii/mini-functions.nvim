@@ -35,6 +35,16 @@ local builtin_modules = {
       insert_markdown_TOC = '<leader>mt',
     },
   },
+  jump_row = {
+    module_path = "mini-functions.jump_row",
+    enable = true,
+    keymaps = {
+      go_outer = '[[',
+      -- go_inner = ']]',
+      go_next_sibling = '[j',
+      go_previous_sibling = '[k',
+    },
+  },
 }
 
 ---@type TSModule[]

@@ -48,4 +48,20 @@ function M.table_inspect(tbl, indent)
   end
 end
 
+-- create dot-repeat function
+---@param func fun():nil function to repeat
+---@param func_name string name of the function
+function M.make_dot_repeat(func, func_name)
+  return function(motion)
+    if motion == nil then
+      -- if the function is called from keymap or command
+      func()
+      vim.o.operatorfunc = func_name
+      vim.api.nvim_feedkeys("g@l", "n", true)
+    else
+      func()
+    end
+  end
+end
+
 return M
