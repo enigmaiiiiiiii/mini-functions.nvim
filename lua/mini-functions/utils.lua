@@ -68,4 +68,16 @@ function M.make_dot_repeat(func, func_name)
   end
 end
 
+---@param mod MiniModule
+function M.setup_config_keymaps(mod, mode)
+  mode = mode or 'n'
+  for funcname, mapping in pairs(mod.config.keymaps) do
+    ---@type string | function
+    local rhs = mod[funcname]
+    if mapping then
+      vim.keymap.set(mode, mapping, rhs, { silent = true, noremap = true })
+    end
+  end
+end
+
 return M

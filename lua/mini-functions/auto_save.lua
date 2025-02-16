@@ -5,7 +5,6 @@ M.config = {
   delay = 2000,
 }
 
-local auto_save_group = vim.api.nvim_create_augroup('auto_save', { clear = true })
 
 ---@type table<number, number>
 local timer_table = {}
@@ -48,6 +47,7 @@ end
 -- local debounced_save = debounce(save, delay)
 local debounced_save = debounce(save, M.config.delay)
 
+local auto_save_group = vim.api.nvim_create_augroup('auto_save', { clear = true })
 local auto_save = function()
   -- local config = configs.get_config('auto_save')
   vim.api.nvim_create_autocmd(

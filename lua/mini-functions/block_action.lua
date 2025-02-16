@@ -5,6 +5,7 @@ local utils = require('mini-functions.utils')
 
 local M = {}
 
+---@type MiniConfig
 M.config = {
   keymaps = {
     go_outer = '[[', -- Go to outer node
@@ -24,7 +25,7 @@ end
 ---@return fun():nil
 local function sibling(get_target)
   return function()
-    local node = ts_utils.get_node_at_cursor(0, true) ---@type TSNode
+    local node = ts_utils.get_node_at_cursor(0, true) ---@type TSNode?
     if node == nil then return end
     local csrow, cscol, cerow, cecol = node:range() ---@type integer, integer, integer, integer
 
@@ -35,7 +36,7 @@ local function sibling(get_target)
     while true do
       local target = get_target(node)
       local parent = node:parent()
-      if parent == nil then return end
+      if parent == nil or target == nil then return end
       local tsrow, _, _, _ = target:range()
       local psrow, _, perow, _ = parent:range()
 
@@ -74,12 +75,14 @@ M.go_outer = utils.make_dot_repeat(function()
   -- local root = parsers.get_parser():parse()[1]:root()
   -- node = root:named_descendant_for_range(csrow - 1, cscol - 1, cerow - 1, cecol)
   while true do
-    local target = node:parent() or node
+    local target = node:parent() or node  ---@type TSNode?
+    if target == nil then return end
     local tsrow, _, _, _ = target:range()
 
     -- for root node or no next node selected
     if not target or target == node then
       -- Keep searching in the main tree
+      ---@type TSNode
       local root = parsers.get_parser():parse()[1]:root()
       target = root:named_descendant_for_range(csrow - 1, cscol - 1, cerow - 1, cecol)
       if not target or root == node or target == node then

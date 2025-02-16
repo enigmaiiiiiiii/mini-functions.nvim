@@ -8,7 +8,7 @@ function M.setup()
 end
 
 ---@class MiniModule
----@field config table<string, any>
+---@field config MiniConfig
 ---@field attach function(string)
 
 return M

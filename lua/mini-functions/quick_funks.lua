@@ -3,7 +3,6 @@ local M = {}
 M.config = {
   keymaps = {
     replace_with_clipboard = 'cp',
-    insert_markdown_TOC = '<leader>mt',
     switch_focus_on_vertical = '<c-\\>'
   },
 }
@@ -11,7 +10,7 @@ M.config = {
 local FUNCTION_DESCRIPTIONS = {
   get_buffer_path = 'Copy the full path of the current buffer to the clipboard',
   replace_with_clipboard = 'Replace the current word with the contents of the clipboard',
-  insert_markdown_TOC = 'Insert a table of contents for the current markdown file',
+  insert_markdown_toc = 'Insert a table of contents for the current markdown file',
 }
 
 M.get_buffer_path = function()
@@ -27,7 +26,7 @@ M.replace_with_clipboard = function()
   vim.fn.setreg('"', clipboard_content)
 end
 
-local function generate_markdown_TOC()
+local function generate_markdown_toc()
   local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
   local toc = {}
   for _, line in ipairs(lines) do
@@ -40,8 +39,8 @@ local function generate_markdown_TOC()
   return toc
 end
 
-M.insert_markdown_TOC = function()
-  local toc = generate_markdown_TOC()
+M.insert_markdown_toc = function()
+  local toc = generate_markdown_toc()
   local row, _ = unpack(vim.api.nvim_win_get_cursor(0))
   vim.api.nvim_buf_set_lines(0, row, row, false, toc)
 end
@@ -90,7 +89,6 @@ M.attach = function()
   -- bind the functions to keymaps
   for funcname, mapping in pairs(M.config.keymaps) do
     ---@type string|function
-    -- local rhs = string.format(":lua require('mini-functions.funk').%s()<CR>", funcname)
     local rhs = M[funcname]
     local mode = 'n'
     if mapping then
