@@ -9,17 +9,11 @@ local M = {}
 M.config = {
   keymaps = {
     go_outer = '[[', -- Go to outer node
-    -- go_inner = ']]', -- Go to inner node
+    -- go_outer_end = ']]', -- Go to inner node
     go_next_sibling = '[j', -- Go to next sibling
     go_previous_sibling = '[k', -- Go to previous sibling
   },
 }
-
-local update_cursor = function(node)
-  local srow, scol, _, _ = node:range() ---@type integer, integer, integer, integer
-  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("m'", true, true, true), 'n', true)
-  vim.api.nvim_win_set_cursor(0, { srow + 1, scol })
-end
 
 ---@param get_target fun(node: TSNode): TSNode | nil
 ---@return fun():nil
@@ -56,7 +50,7 @@ local function sibling(get_target)
         node = node:parent()
       else
         if target ~= node then
-          update_cursor(target)
+          utils.update_cursor(target)
           return
         else
           return
@@ -86,7 +80,7 @@ M.go_outer = utils.make_dot_repeat(function()
       local root = parsers.get_parser():parse()[1]:root()
       target = root:named_descendant_for_range(csrow - 1, cscol - 1, cerow - 1, cecol)
       if not target or root == node or target == node then
-        update_cursor(node)
+        utils.update_cursor(node)
         return
       end
     end
@@ -94,7 +88,7 @@ M.go_outer = utils.make_dot_repeat(function()
     if tsrow == csrow then
       node = target
     else
-      update_cursor(target)
+      utils.update_cursor(target)
       return
     end
   end

@@ -3,6 +3,11 @@ local ts_utils = require('nvim-treesitter.ts_utils')
 local utils = require('mini-functions.utils')
 local M = {}
 
+---@class ParentCheckOpt
+---@field lang string
+---@field root TSNode
+---@field node TSNode
+
 ---@class MemberGroups
 ---@field static_field? string
 ---@field public_field? string
@@ -69,24 +74,26 @@ local query_statements = {
         (#match? @field_declaration ".*\<static\>.*")
       )
     ]],
+    -- this pattern will cause memmax warning
     public_method = [[
       ((method_declaration) @method_declaration
-        (#match? @method_declaration "\(.*\<static\>.*\)\@!.*\<public\>.*(.*).*")
+        (#match? @method_declaration "\(.*\<static\>.*\)\@!.*\<public\>.*")
       )
     ]],
     protected_method = [[
       ((method_declaration) @method_declaration
-        (#match? @method_declaration "\(.*\<static\>.*\)\@!.*\<protected\>.*(.*).*")
+        (#match? @method_declaration "\(.*\<static\>.*\)\@!.*\<protected\>.*")
       )
     ]],
+    -- this pattern will cause memmax warning
     private_method = [[
       ((method_declaration) @method_declaration
-        (#match? @method_declaration "\(.*\<static\>.*\)\@!.*\<private\>.*(.*).*")
+        (#match? @method_declaration "\(.*\<static\>.*\)\@!.*\<private\>.*")
       )
     ]],
     static_method = [[
       ((method_declaration) @method_declaration
-        (#match? @method_declaration ".*\<static\>.*(.*).*")
+        (#match? @method_declaration ".*\<static\>.*")
       )
     ]],
     property = [[
@@ -106,7 +113,24 @@ local class_node_types = {
 }
 
 local class_query_statements = {
-  c_sharp = [[(class_declaration @class_declaration)]],
+  c_sharp = [[
+    (class_declaration) @class_declaration
+  ]],
+}
+
+---@type table<string, fun(opts: ParentCheckOpt):boolean>
+local parent_check_handlers = {
+  c_sharp = function(opts)
+    local declaration_list_statement = [[(declaration_list) @declaration_list]]
+    local ok, query = pcall(vim.treesitter.query.parse, opts.lang, declaration_list_statement)
+    if not ok then return false end
+    for _, declaration_list_node, _ in query:iter_captures(opts.root, 0) do
+      if declaration_list_node:parent() == opts.root and opts.node:parent() == declaration_list_node then
+        return true
+      end
+    end
+    return false
+  end,
 }
 
 ---@return TSNode
@@ -122,9 +146,7 @@ local function get_current_class_node(lang)
   ---@type TSNode
   local root = parsers.get_parser():parse()[1]:root()
   local ok, query = pcall(vim.treesitter.query.parse, lang, class_query_statements[lang])
-  if not ok then
-    return root
-  end
+  if not ok then return root end
 
   for _, node, _ in query:iter_captures(root, 0) do
     return node
@@ -133,8 +155,7 @@ local function get_current_class_node(lang)
   return parsers.get_parser():parse()[1]:root()
 end
 
-local function get_member_group_node_iter(query_statement, lang)
-  local class_node = get_current_class_node(lang)
+local function get_member_group_node_iter(query_statement, lang, class_node)
   local ok, query = pcall(vim.treesitter.query.parse, lang, query_statement)
   if not ok then return end
 
@@ -142,12 +163,14 @@ local function get_member_group_node_iter(query_statement, lang)
 end
 
 local function jump_to_first_node_of_member_group(query_statement, lang)
-  local iter = get_member_group_node_iter(query_statement, lang)
+  local class_node = get_current_class_node(lang)
+  local iter = get_member_group_node_iter(query_statement, lang, class_node)
   if not iter then return end
   for _, node, _ in iter do
-    local row, col, _ = node:start()
-    vim.api.nvim_win_set_cursor(0, { row + 1, col })
-    break
+    if parent_check_handlers[lang]({ lang = lang, root = class_node, node = node }) then
+      utils.update_cursor(node)
+      break
+    end
   end
 end
 
@@ -155,11 +178,13 @@ local function dynamic_query_and_bindkey()
   ---@type string
   local lang = parsers.get_buf_lang(0)
   if not query_statements[lang] then return end
+
   for declaration_type, query_statement in pairs(query_statements[lang]) do
     ---@type string
     local mapping = '`' .. M.config.member_group_marks[declaration_type]
-    local rhs = function() jump_to_first_node_of_member_group(query_statement, lang) end
-    print(declaration_type)
+    local rhs = function()
+      jump_to_first_node_of_member_group(query_statement, lang)
+    end
     vim.keymap.set('n', mapping, rhs, { silent = true, noremap = true })
   end
 end
@@ -187,8 +212,8 @@ function M.attach()
   if M.config.auto_mark then
     vim.api.nvim_create_autocmd('BufEnter', {
       group = mark_member_group,
-      pattern = {'*.cs', '*.ts'},
-      callback = dynamic_query_and_bindkey
+      pattern = { '*.cs', '*.ts' },
+      callback = dynamic_query_and_bindkey,
     })
   end
 end
