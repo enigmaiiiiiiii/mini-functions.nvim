@@ -47,7 +47,7 @@ M.config = {
   keymaps = {
     -- go_to_next_member_group = '`n',
     -- go_to_previous_member_group = '`p',
-    mark_member_manually = '<leader>mm',
+    -- mark_member_manually = '<leader>mm',
   },
 }
 
