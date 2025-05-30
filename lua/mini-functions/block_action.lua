@@ -8,12 +8,26 @@ local M = {}
 ---@type MiniConfig
 M.config = {
   keymaps = {
-    go_outer = '[[', -- Go to outer node
-    -- go_outer_end = ']]', -- Go to inner node
+    go_outer_start = '[[', -- Go to outer node
+    go_outer_end = ']]', -- Go to outer node end
     go_next_sibling = '[j', -- Go to next sibling
     go_previous_sibling = '[k', -- Go to previous sibling
   },
 }
+
+local function cursor_is_on_blank()
+  local line = vim.api.nvim_get_current_line()
+  local col = vim.api.nvim_win_get_cursor(0)[2]
+
+  if line == '' then
+    return true;
+  end
+
+  if col < #line then
+    return line:sub(col + 1, col + 1):match('%s') ~= nil
+  end
+  return false
+end
 
 ---@param get_target fun(node: TSNode): TSNode | nil
 ---@return fun():nil
@@ -60,18 +74,18 @@ local function sibling(get_target)
   end
 end
 
--- M.go_outer = move(function(node) return node:parent() or node end)
-M.go_outer = utils.make_dot_repeat(function()
+local function go_outer(to_end)
   local node = ts_utils.get_node_at_cursor() ---@type TSNode
   local csrow, cscol, cerow, cecol = node:range() ---@type integer, integer, integer, integer
 
-  -- Find a node that changes the current selection.
-  -- local root = parsers.get_parser():parse()[1]:root()
-  -- node = root:named_descendant_for_range(csrow - 1, cscol - 1, cerow - 1, cecol)
+  if cursor_is_on_blank() then
+    utils.update_cursor(node, to_end)
+    return
+  end
+
   while true do
-    local target = node:parent() or node  ---@type TSNode?
+    local target = node:parent() or node ---@type TSNode?
     if target == nil then return end
-    local tsrow, _, _, _ = target:range()
 
     -- for root node or no next node selected
     if not target or target == node then
@@ -80,21 +94,43 @@ M.go_outer = utils.make_dot_repeat(function()
       local root = parsers.get_parser():parse()[1]:root()
       target = root:named_descendant_for_range(csrow - 1, cscol - 1, cerow - 1, cecol)
       if not target or root == node or target == node then
-        utils.update_cursor(node)
+        utils.update_cursor(node, to_end)
         return
       end
     end
 
-    if tsrow == csrow then
+    ---@type integer, integer
+    local node_pos, target_pos
+    if to_end then
+      node_pos = node:end_()
+      target_pos = target:end_()
+    else
+      node_pos = node:start()
+      target_pos = target:start()
+    end
+
+    if node_pos == target_pos then
       node = target
     else
-      utils.update_cursor(target)
+      utils.update_cursor(target, to_end)
       return
     end
   end
-end, 'v:lua.MiniFunctionsBlockAction.go_outer')
+end
 
--- M.go_inner = sibling(function(node) return node:child(0) or node end)
+M.go_outer_end = utils.make_dot_repeat(
+  function()
+    go_outer(true)
+  end,
+  'v:lua.MiniFunctionsBlockAction.go_outer_end'
+)
+
+M.go_outer_start = utils.make_dot_repeat(
+  function()
+    go_outer(false)
+  end,
+  'v:lua.MiniFunctionsBlockAction.go_outer_start'
+)
 
 M.go_next_sibling = utils.make_dot_repeat(
   sibling(function(node) return node:next_sibling() or node end),
@@ -106,18 +142,11 @@ M.go_previous_sibling = utils.make_dot_repeat(
   'v:lua.MiniFunctionsBlockAction.go_previous_sibling'
 )
 
-local FUNCTION_DESCRIPTIONS = {
-  go_inner = 'Go to inner node',
-  go_outer = 'Go to outer node',
-  go_next_sibling = 'Go to next sibling',
-  go_previous_sibling = 'Go to previous sibling',
-}
-
-local keymap_opts = function(desc) return { silent = true, expr = true, noremap = true, buffer=true, desc = desc } end
+local keymap_opts = function(desc) return { silent = true, expr = true, noremap = true, buffer = true, desc = desc } end
 
 local function set_block_action_keymaps()
-  vim.keymap.set('n', M.config.keymaps.go_outer, function() M.go_outer() end, keymap_opts('Go To Outer Node'))
-  -- vim.keymap.set('n', M.config.keymaps.go_inner, function() M.go_inner() end, keymap_opts('Go To Inner Node'))
+  vim.keymap.set('n', M.config.keymaps.go_outer_start, function() M.go_outer_start() end, keymap_opts('Go To Outer Node'))
+  vim.keymap.set('n', M.config.keymaps.go_outer_end, function() M.go_outer_end() end, keymap_opts('Go To Outer Node End'))
   vim.keymap.set(
     'n',
     M.config.keymaps.go_next_sibling,

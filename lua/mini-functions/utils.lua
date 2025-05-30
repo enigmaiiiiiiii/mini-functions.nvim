@@ -81,9 +81,15 @@ function M.setup_config_keymaps(mod, mode)
 end
 
 ---@param node TSNode
-function M.update_cursor(node)
-
-  local row, col, _ = node:start()
+function M.update_cursor(node, to_end)
+  to_end = to_end or false
+  local row, col = 0, 0
+  if (to_end) then
+    row, col, _ = node:end_()
+  else
+    row, col, _ = node:start()
+  end
+  
   vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("m'", true, true, true), 'n', true)
   vim.api.nvim_win_set_cursor(0, { row + 1, col })
 end
