@@ -89,9 +89,11 @@ function M.update_cursor(node, to_end)
   else
     row, col, _ = node:start()
   end
-  
+
   vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("m'", true, true, true), 'n', true)
-  vim.api.nvim_win_set_cursor(0, { row + 1, col })
+  local total_lines = vim.api.nvim_buf_line_count(0)
+  row = row + 1 < total_lines and row + 1 or total_lines
+  vim.api.nvim_win_set_cursor(0, { row, col })
 end
 
 return M
