@@ -3,7 +3,6 @@ local M = {}
 M.config = {
   keymaps = {
     replace_with_clipboard = 'cp',
-    switch_focus_on_vertical = '<c-\\>'
   },
 }
 
@@ -13,10 +12,16 @@ local FUNCTION_DESCRIPTIONS = {
   insert_markdown_toc = 'Insert a table of contents for the current markdown file',
 }
 
-M.get_buffer_path = function()
+M.get_absolute_buffer_path = function()
   local full_path = vim.fn.expand('%:p')
   vim.fn.setreg('+', full_path)
   print(full_path)
+end
+
+M.get_workspace_buffer_path = function()
+  local relative_path = vim.fn.expand('%:.:p')
+  vim.fn.setreg('+', relative_path)
+  print(relative_path)
 end
 
 M.replace_with_clipboard = function()
@@ -75,15 +80,15 @@ M.switch_focus_on_vertical = function()
   end
 end
 
-M.commands = {
-  FunkBufferPath = {
-    run = M.get_buffer_path,
-    args = {
-      '-nargs=1',
-      '-complete=custom',
-    },
-  },
-}
+-- M.commands = {
+--   FunkBufferPath = {
+--     run = M.get_buffer_path,
+--     args = {
+--       '-nargs=1',
+--       '-complete=custom',
+--     },
+--   },
+-- }
 
 M.attach = function()
   -- bind the functions to keymaps
