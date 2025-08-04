@@ -37,7 +37,8 @@ local function generate_markdown_toc()
   for _, line in ipairs(lines) do
     local level, title = string.match(line, '^(##+)%s*(.*)')
     if level and title then
-      local item = string.format('%s* [%s](#%s)', string.rep('  ', #level - 2), title, title:lower():gsub('%s+', '-'))
+      -- local item = string.format('%s* [%s](#%s)', string.rep('  ', #level - 2), title, title:lower():gsub('%s+', '-')) -- for marksman
+      local item = string.format('%s* [%s](#%s)', string.rep('  ', #level - 2), title, title:gsub("%s+$", "")) -- for markdown-oxide
       table.insert(toc, item)
     end
   end
