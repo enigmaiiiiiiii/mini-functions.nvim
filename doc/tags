@@ -1,11 +1,10 @@
-:MyPluginCommand	mini-functions.txt	/*:MyPluginCommand*
-<Plug>(MyPluginAction)	mini-functions.txt	/*<Plug>(MyPluginAction)*
+:BufferAbsolutePath	mini-functions.txt	/*:BufferAbsolutePath*
+:BufferWorkspacePath	mini-functions.txt	/*:BufferWorkspacePath*
 g:mini_functions_option	mini-functions.txt	/*g:mini_functions_option*
 mini-functions-commands	mini-functions.txt	/*mini-functions-commands*
 mini-functions-contents	mini-functions.txt	/*mini-functions-contents*
 mini-functions-installation	mini-functions.txt	/*mini-functions-installation*
 mini-functions-introduction	mini-functions.txt	/*mini-functions-introduction*
-mini-functions-mappings	mini-functions.txt	/*mini-functions-mappings*
 mini-functions-options	mini-functions.txt	/*mini-functions-options*
 mini-functions-usage	mini-functions.txt	/*mini-functions-usage*
 mini-functions.txt	mini-functions.txt	/*mini-functions.txt*
