@@ -6,7 +6,7 @@ lazynvim
 
 ```lua
 require('lazy').setup({
-  'enigmaiiiiiiii/mini-functions.nvim',
+  'synaptafin/mini-functions.nvim',
 })
 ```
 

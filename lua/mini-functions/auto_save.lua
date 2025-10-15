@@ -33,10 +33,13 @@ local save = function(buf)
   if not vim.api.nvim_get_option_value("modified", { buf = buf }) then
     return
   end
+  local buf_name = vim.api.nvim_buf_get_name(buf)
+  if (buf_name == '') then
+    return
+  end
   vim.api.nvim_buf_call(buf, function()
     vim.api.nvim_command("silent update")
   end)
-  local buf_name = vim.api.nvim_buf_get_name(buf)
   local file_name = string.match(buf_name, "/([^/]+)$")
   local message = string.format('"%s" auto written at %s', file_name, os.date("%H:%M:%S") )
   print(message)
