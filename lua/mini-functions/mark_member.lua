@@ -27,7 +27,7 @@ local M = {}
 ---@alias node_iterator fun():integer, TSNode, vim.treesitter.query.TSMetadata, TSQueryMatch
 
 ---@type MarkMemberConfig
-M.config = {
+local config = {
   member_group_marks = {
     static_field     = '1',
     static_method    = '2',
@@ -181,7 +181,7 @@ local function dynamic_query_and_bindkey()
 
   for declaration_type, query_statement in pairs(query_statements[lang]) do
     ---@type string
-    local mapping = '`' .. M.config.member_group_marks[declaration_type]
+    local mapping = '`' .. config.member_group_marks[declaration_type]
     local rhs = function()
       jump_to_first_node_of_member_group(query_statement, lang)
     end
@@ -195,7 +195,7 @@ M.mark_member_manually = function()
   if not query_statements[lang] then return end
   for declaration_type, query_statement in pairs(query_statements[lang]) do
     ---@type string
-    local mark_name = M.config.member_group_marks[declaration_type]
+    local mark_name = config.member_group_marks[declaration_type]
     local node_iter = get_member_group_node_iter(query_statement, lang)
     for _, node, _ in node_iter do
       local row, col, _ = node:start()
@@ -206,10 +206,12 @@ M.mark_member_manually = function()
 end
 
 local mark_member_group = vim.api.nvim_create_augroup('mark_member', { clear = true })
-function M.attach()
+
+M.setup = function(user_config)
+  config = vim.tbl_deep_extend('force', config, user_config or {})
   _G.MiniFunctionsAutoMark = M
-  utils.setup_config_keymaps(M, 'n')
-  if M.config.auto_mark then
+
+  if config.auto_mark then
     vim.api.nvim_create_autocmd('BufEnter', {
       group = mark_member_group,
       pattern = { '*.cs', '*.ts' },
@@ -218,7 +220,7 @@ function M.attach()
   end
 end
 
-M.detach = function()
+M.disable = function()
   _G.MiniFunctionsAutoMark = nil
   vim.api.nvim_clear_autocmds({ group = mark_member_group })
 end

@@ -1,6 +1,6 @@
 local M = {}
 
-M.config = {
+local config = {
   keymaps = {
     replace_with_clipboard = 'cp',
   },
@@ -12,19 +12,19 @@ local FUNCTION_DESCRIPTIONS = {
   insert_markdown_toc = 'Insert a table of contents for the current markdown file',
 }
 
-M.get_absolute_buffer_path = function()
+local get_absolute_buffer_path = function()
   local full_path = vim.fn.expand('%:p')
   vim.fn.setreg('+', full_path)
   print(full_path)
 end
 
-M.get_workspace_buffer_path = function()
+local get_workspace_buffer_path = function()
   local relative_path = vim.fn.expand('%:.:p')
   vim.fn.setreg('+', relative_path)
   print(relative_path)
 end
 
-M.replace_with_clipboard = function()
+local replace_with_clipboard = function()
   local clipboard_content = vim.fn.getreg('"')
   vim.fn.expand('<cword>')
   vim.api.nvim_command('normal! ciw' .. clipboard_content)
@@ -45,7 +45,7 @@ local function generate_markdown_toc()
   return toc
 end
 
-M.insert_markdown_toc = function()
+local insert_markdown_toc = function()
   local toc = generate_markdown_toc()
   local row, _ = unpack(vim.api.nvim_win_get_cursor(0))
   vim.api.nvim_buf_set_lines(0, row, row, false, toc)
@@ -54,8 +54,8 @@ end
 M.switch_focus_on_vertical = function()
   local function is_normal_window(win)
     local available = false
-    local config = vim.api.nvim_win_get_config(win)
-    if not config.relative or config.relative == '' then available = true end
+    local win_config = vim.api.nvim_win_get_config(win)
+    if not win_config.relative or win_config.relative == '' then available = true end
     return available
   end
 
@@ -81,28 +81,13 @@ M.switch_focus_on_vertical = function()
   end
 end
 
--- M.commands = {
---   FunkBufferPath = {
---     run = M.get_buffer_path,
---     args = {
---       '-nargs=1',
---       '-complete=custom',
---     },
---   },
--- }
+M.setup = function(user_config)
+  config = vim.tbl_deep_extend('force', config, user_config or {})
+  vim.keymap.set('n', config.keymaps.replace_with_clipboard, replace_with_clipboard, { silent = true, noremap = true, desc = FUNCTION_DESCRIPTIONS.replace_with_clipboard })
 
-M.attach = function()
-  -- bind the functions to keymaps
-  for funcname, mapping in pairs(M.config.keymaps) do
-    ---@type string|function
-    local rhs = M[funcname]
-    local mode = 'n'
-    if mapping then
-      vim.keymap.set(mode, mapping, rhs, { silent = true, noremap = true, desc = FUNCTION_DESCRIPTIONS[funcname] })
-    end
-  end
+  vim.api.nvim_create_user_command('BufferAbsolutePath', get_absolute_buffer_path, { desc = FUNCTION_DESCRIPTIONS.get_buffer_path })
+  vim.api.nvim_create_user_command('BufferWorkspacePath', get_workspace_buffer_path, { desc = FUNCTION_DESCRIPTIONS.get_buffer_path })
+  vim.api.nvim_create_user_command('TableOfMarkdown', insert_markdown_toc, { desc = FUNCTION_DESCRIPTIONS.insert_markdown_toc })
 end
-
-M.detach = function() end
 
 return M

@@ -2,7 +2,7 @@ local ts_utils = require('nvim-treesitter.ts_utils')
 
 local M = {}
 
-M.config = {
+local config = {
   keymaps = {
     slide_down = 'gj',
     slide_up = 'gk',
@@ -20,9 +20,10 @@ end
 local function move_to_line()
 end
 
-M.attach = function()
+M.setup = function(user_config)
+  config = vim.tbl_deep_extend('force', config, user_config or {})
   _G.MiniFunctionsSlideBlock = M
-  for funcname, mapping in pairs(M.config.keymaps) do
+  for funcname, mapping in pairs(config.keymaps) do
     ---@type string | function
     local rhs = M[funcname]
     local mode = 'v'
@@ -37,9 +38,9 @@ M.attach = function()
   end
 end
 
-M.detach = function()
+M.disable = function()
   _G.MiniFunctionsSlideBlock = nil
-  for _, mapping in pairs(M.config.keymaps) do
+  for _, mapping in pairs(config.keymaps) do
     if mapping then vim.keymap.del('v', mapping) end
   end
 end

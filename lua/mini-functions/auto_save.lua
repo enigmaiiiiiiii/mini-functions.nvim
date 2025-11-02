@@ -1,6 +1,6 @@
 local M = {}
 
-M.config = {
+local config = {
   trigger_events = { 'BufLeave', 'FocusLost', 'InsertLeave', 'TextChanged' },
   delay = 2000,
 }
@@ -48,24 +48,62 @@ end
 ---@type function
 -- local delay = configs.get_config('auto_save').delay
 -- local debounced_save = debounce(save, delay)
-local debounced_save = debounce(save, M.config.delay)
+local debounced_save = debounce(save, config.delay)
 
 local auto_save_group = vim.api.nvim_create_augroup('auto_save', { clear = true })
-local auto_save = function()
-  -- local config = configs.get_config('auto_save')
+local auto_save = function(opts)
+  if opts.args[1] == 'disable' then
+    vim.api.nvim_clear_autocmds({ group = auto_save_group })
+    return
+  end
+  if opts.args[1] == 'enable' then
+    vim.api.nvim_create_autocmd(
+      config.trigger_events,
+      {
+        group = auto_save_group,
+        callback = debounced_save,
+      }
+    )
+    return
+  end
+  if opts.args[1] == 'delay' and tonumber(opts.args[2]) then
+    config.delay = tonumber(opts.args[2])
+    debounced_save = debounce(save, config.delay)
+    vim.api.nvim_clear_autocmds({ group = auto_save_group })
+    vim.api.nvim_create_autocmd(
+      config.trigger_events,
+      {
+        group = auto_save_group,
+        callback = debounced_save,
+      }
+    )
+  end
+end
+
+M.setup = function(user_config)
+  config = vim.tbl_deep_extend('force', config, user_config or {})
+
   vim.api.nvim_create_autocmd(
-    M.config.trigger_events,
+    config.trigger_events,
     {
       group = auto_save_group,
       callback = debounced_save,
     }
-)
-end
+  )
 
-M.attach = function()
-  auto_save()
+  vim.api.nvim_create_user_command('AutoSave', auto_save, {
+    nargs = '*',
+    complete = function(arglead, cmdline, cursorpos)
+      local commands = { 'enable', 'disable', 'delay' }
+      local args = {}
+      for _, cmd in ipairs(commands) do
+        if vim.startswith(cmd, arglead) then
+          table.insert(args, cmd)
+        end
+      end
+      return args
+    end,
+  });
 end
-
-M.detach = function() vim.api.nvim_clear_autocmds({ group = auto_save_group }) end
 
 return M

@@ -6,7 +6,7 @@ local utils = require('mini-functions.utils')
 local M = {}
 
 ---@type MiniConfig
-M.config = {
+local config = {
   keymaps = {
     go_outer_start = '[[', -- Go to outer node
     go_outer_end = ']]', -- Go to outer node end
@@ -118,26 +118,26 @@ local function go_outer(to_end)
   end
 end
 
-M.go_outer_end = utils.make_dot_repeat(
+local go_outer_end = utils.make_dot_repeat(
   function()
     go_outer(true)
   end,
   'v:lua.MiniFunctionsBlockAction.go_outer_end'
 )
 
-M.go_outer_start = utils.make_dot_repeat(
+local go_outer_start = utils.make_dot_repeat(
   function()
     go_outer(false)
   end,
   'v:lua.MiniFunctionsBlockAction.go_outer_start'
 )
 
-M.go_next_sibling = utils.make_dot_repeat(
+local go_next_sibling = utils.make_dot_repeat(
   sibling(function(node) return node:next_sibling() or node end),
   'v:lua.MiniFunctionsBlockAction.go_next_sibling'
 )
 
-M.go_previous_sibling = utils.make_dot_repeat(
+local go_previous_sibling = utils.make_dot_repeat(
   sibling(function(node) return node:prev_sibling() or node end),
   'v:lua.MiniFunctionsBlockAction.go_previous_sibling'
 )
@@ -145,18 +145,18 @@ M.go_previous_sibling = utils.make_dot_repeat(
 local keymap_opts = function(desc) return { silent = true, expr = true, noremap = true, buffer = true, desc = desc } end
 
 local function set_block_action_keymaps()
-  vim.keymap.set('n', M.config.keymaps.go_outer_start, function() M.go_outer_start() end, keymap_opts('Go To Outer Node'))
-  vim.keymap.set('n', M.config.keymaps.go_outer_end, function() M.go_outer_end() end, keymap_opts('Go To Outer Node End'))
+  vim.keymap.set('n', config.keymaps.go_outer_start, go_outer_start, keymap_opts('Go To Outer Node'))
+  vim.keymap.set('n', config.keymaps.go_outer_end, go_outer_end, keymap_opts('Go To Outer Node End'))
   vim.keymap.set(
     'n',
-    M.config.keymaps.go_next_sibling,
-    function() M.go_next_sibling() end,
+    config.keymaps.go_next_sibling,
+    go_next_sibling,
     keymap_opts('Go To Next Sibling')
   )
   vim.keymap.set(
     'n',
-    M.config.keymaps.go_previous_sibling,
-    function() M.go_previous_sibling() end,
+    config.keymaps.go_previous_sibling,
+    go_previous_sibling,
     keymap_opts('Go To Previous Sibling')
   )
 end
@@ -169,7 +169,8 @@ local function is_nofile_buf()
   return false
 end
 
-M.attach = function()
+M.setup = function(user_config)
+  config = vim.tbl_deep_extend('force', config, user_config or {})
   _G.MiniFunctionsBlockAction = M
   vim.api.nvim_create_augroup(autocmd_group, { clear = true })
   vim.api.nvim_create_autocmd('BufEnter', {
@@ -182,7 +183,7 @@ M.attach = function()
   })
 end
 
-M.detach = function(bufnr)
+M.disable = function(bufnr)
   _G.MiniFunctionsBlockAction = nil
   vim.api.nvim_clear_autocmds({
     group = autocmd_group,
