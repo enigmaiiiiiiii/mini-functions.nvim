@@ -42,7 +42,7 @@ local save = function(buf)
   end)
   local file_name = string.match(buf_name, "/([^/]+)$")
   local message = string.format('"%s" auto written at %s', file_name, os.date("%H:%M:%S") )
-  print(message)
+  vim.notify(message, vim.log.levels.INFO, { title = "Auto Save" })
 end
 
 ---@type function
@@ -52,11 +52,13 @@ local debounced_save = debounce(save, config.delay)
 
 local auto_save_group = vim.api.nvim_create_augroup('auto_save', { clear = true })
 local auto_save = function(opts)
-  if opts.args[1] == 'disable' then
+  if opts.fargs[1] == 'disable' then
+    vim.notify('Auto Save Disabled', vim.log.levels.WARN, { title = "Auto Save" })
     vim.api.nvim_clear_autocmds({ group = auto_save_group })
     return
   end
-  if opts.args[1] == 'enable' then
+  if opts.fargs[1] == 'enable' then
+    vim.notify('Auto Save Enabled', vim.log.levels.WARN, { title = "Auto Save" })
     vim.api.nvim_create_autocmd(
       config.trigger_events,
       {
@@ -66,7 +68,7 @@ local auto_save = function(opts)
     )
     return
   end
-  if opts.args[1] == 'delay' and tonumber(opts.args[2]) then
+  if opts.fargs[1] == 'delay' and tonumber(opts.args[2]) then
     config.delay = tonumber(opts.args[2])
     debounced_save = debounce(save, config.delay)
     vim.api.nvim_clear_autocmds({ group = auto_save_group })
