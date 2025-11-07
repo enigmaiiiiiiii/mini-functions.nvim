@@ -169,6 +169,11 @@ local function is_nofile_buf()
   return false
 end
 
+M.go_outer_start = go_outer_start
+M.go_outer_end = go_outer_end
+M.go_next_sibling = go_next_sibling
+M.go_previous_sibling = go_previous_sibling
+
 M.setup = function(user_config)
   config = vim.tbl_deep_extend('force', config, user_config or {})
   _G.MiniFunctionsBlockAction = M
