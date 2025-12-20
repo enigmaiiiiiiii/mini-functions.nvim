@@ -1,11 +1,9 @@
-local ts_utils = require('nvim-treesitter.ts_utils')
 local parsers = require('nvim-treesitter.parsers')
 
 local utils = require('mini-functions.utils')
 
 local M = {}
 
----@type MiniConfig
 local config = {
   keymaps = {
     go_outer_start = '[[', -- Go to outer node
@@ -33,7 +31,8 @@ end
 ---@return fun():nil
 local function sibling(get_target)
   return function()
-    local node = ts_utils.get_node_at_cursor(0, true) ---@type TSNode?
+    -- local node = ts_utils.get_node_at_cursor(0, true) ---@type TSNode?
+    local node = vim.treesitter.get_node()
     if node == nil then return end
     local csrow, cscol, cerow, cecol = node:range() ---@type integer, integer, integer, integer
 
@@ -75,7 +74,8 @@ local function sibling(get_target)
 end
 
 local function go_outer(to_end)
-  local node = ts_utils.get_node_at_cursor() ---@type TSNode
+  local node = vim.treesitter.get_node()  ---@type TSNode?
+  if node == nil then return end
   local csrow, cscol, cerow, cecol = node:range() ---@type integer, integer, integer, integer
 
   if cursor_is_on_blank() then

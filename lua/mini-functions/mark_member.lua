@@ -1,5 +1,4 @@
 local parsers = require('nvim-treesitter.parsers')
-local ts_utils = require('nvim-treesitter.ts_utils')
 local utils = require('mini-functions.utils')
 local M = {}
 
@@ -136,7 +135,7 @@ local parent_check_handlers = {
 ---@return TSNode
 local function get_current_class_node(lang)
   ---@type TSNode?
-  local current_node = ts_utils.get_node_at_cursor()
+  local current_node = vim.treesitter.get_node()
 
   while current_node do
     if current_node:type() == class_node_types[lang] then return current_node end
