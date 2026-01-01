@@ -174,8 +174,9 @@ local function jump_to_first_node_of_member_group(query_statement, lang)
 end
 
 local function dynamic_query_and_bindkey()
+  local filetype = vim.bo.filetype
   ---@type string
-  local lang = parsers.get_buf_lang(0)
+  local lang = vim.treesitter.language.get_lang(filetype) or filetype
   if not query_statements[lang] then return end
 
   for declaration_type, query_statement in pairs(query_statements[lang]) do
@@ -189,8 +190,9 @@ local function dynamic_query_and_bindkey()
 end
 
 M.mark_member_manually = function()
+  local filetype = vim.bo.filetype
   ---@type string
-  local lang = parsers.get_buf_lang(0)
+  local lang = vim.treesitter.language.get_lang(filetype) or filetype
   if not query_statements[lang] then return end
   for declaration_type, query_statement in pairs(query_statements[lang]) do
     ---@type string
