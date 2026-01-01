@@ -30,6 +30,10 @@ local save = function(buf)
   if vim.api.nvim_get_option_value("buftype", { buf = buf }) ~= '' then
     return
   end
+  local is_readonly = vim.api.nvim_get_option_value("readonly", { buf = buf })  ---@type boolean
+  if (is_readonly) then
+    return
+  end
   if not vim.api.nvim_get_option_value("modified", { buf = buf }) then
     return
   end
