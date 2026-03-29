@@ -17,4 +17,6 @@ function M.setup(user_config)
   require('mini-functions.slide_block').setup(user_config.slide_block)
 end
 
+M.utils = require('mini-functions.utils')
+
 return M
