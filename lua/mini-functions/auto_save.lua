@@ -46,7 +46,7 @@ local save = function(buf)
   end)
   local file_name = string.match(buf_name, "/([^/]+)$")
   local message = string.format('"%s" auto written at %s', file_name, os.date("%H:%M:%S") )
-  vim.print(message, vim.log.levels.INFO, { title = "Auto Save" })
+  vim.print(message)
 end
 
 ---@type function
