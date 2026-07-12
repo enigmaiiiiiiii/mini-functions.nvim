@@ -1,2 +1,0 @@
--- disable setup when installed
--- require("mini-functions").setup()

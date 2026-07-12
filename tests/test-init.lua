@@ -1,4 +1,4 @@
 vim.opt.runtimepath:append(".")
 
 
-require "mini-functions"
+require "my-addons"

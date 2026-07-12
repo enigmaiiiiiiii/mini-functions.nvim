@@ -1,12 +1,12 @@
 local M = {}
 
----@class MiniModule
----@field config MiniConfig
+---@class Mod
+---@field config ModConfig
 ---@field attach function(string)
 
 -- get property value at path
 ---@param path string path split by '.'
----@return ModuleConfig | nil result the value at path or nil
+---@return ModConfig | nil result the value at path or nil
 function M.get_at_path(configs, path)
   if path == '' then return configs end
   local segments = vim.split(path, '.', {plain = true})

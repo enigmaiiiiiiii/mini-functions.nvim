@@ -1,42 +1,42 @@
-*mini-functions.txt*        My custom functions.
+*my-addons.txt*        My custom functions.
 
 ==============================================================================
-CONTENTS                                             *mini-functions-contents*
+CONTENTS                                             *my-addons-contents*
 
-  1. Introduction..................................|mini-functions-introduction|
-  2. Installation................................|mini-functions-installation|
-  3. Usage...........................................|mini-functions-usage|
-  4. Commands......................................|mini-functions-commands|
-  5. Options.......................................|mini-functions-options|
+  1. Introduction..................................|my-addons-introduction|
+  2. Installation..................................my-addons-installation
+  3. Usage.........................................|my-addons-usage|
+  4. Commands......................................|my-addons-commands|
+  5. Options.......................................|my-addons-options|
 
 ==============================================================================
-INTRODUCTION                                       *mini-functions-introduction*
+INTRODUCTION                                         *my-addons-introduction*
 
 Detailed description of what your plugin does. Explain the problem it solves
-and its main features. For example, "mini-functions provides a set of..."
+and its main features. For example, "my-addons provides a set of..."
 
 ==============================================================================
-INSTALLATION                                     *mini-functions-installation*
+INSTALLATION                                         *my-addons-installation*
 
 Instructions on how to install the plugin using popular plugin managers.
 
 Example for lazy.nvim:
 >
   {
-    'enigmaiiiiiiii/mini-functions.nvim',
+    'odezzshuuk/my-addons.nvim',
     config = function()
-      require('mini-functions').setup({})
+      require('my-addons').setup({})
     end,
   },
 <
 ==============================================================================
-USAGE                                                    *mini-functions-usage*
+USAGE                                                    *my-addons-usage*
 
 Explain how to use the plugin's core features. Provide code examples if
 applicable.
 
 ==============================================================================
-COMMANDS                                               *mini-functions-commands*
+COMMANDS                                                 *my-addons-commands*
 
                                                         *:BufferAbsolutePath*
 :BufferAbsolutePath{args}
@@ -48,16 +48,16 @@ COMMANDS                                               *mini-functions-commands*
     Description of what this command does. Explain the optional bang [!] and
     any arguments {args}.
 ==============================================================================
-OPTIONS                                                  *mini-functions-options*
+OPTIONS                                                  *my-addons-options*
 
-                                                        *g:mini_functions_option*
-g:mini_functions_option                                     Default: `value`
+                                                        *g:my_addons_option*
+g:my_addons_option                                     Default: `value`
     Description of a configurable option. Explain what it does and what its
     possible values are.
 
 Example of how to configure it in the `setup` function:
 >
-  require('mini-functions').setup({
+  require('my-addons').setup({
     some_option = 'new_value',
   })
 <

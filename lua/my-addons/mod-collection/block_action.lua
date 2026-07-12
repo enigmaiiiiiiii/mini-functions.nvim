@@ -1,29 +1,22 @@
 local parsers = require('nvim-treesitter.parsers')
-
-local utils = require('mini-functions.utils')
+local utils = require('my-addons.utils')
 
 local M = {}
-
-local config = {
-  keymaps = {
-    go_outer_start = '[[', -- Go to outer node
-    go_outer_end = ']]', -- Go to outer node end
-    go_next_sibling = '[j', -- Go to next sibling
-    go_previous_sibling = '[k', -- Go to previous sibling
-  },
-}
 
 local function cursor_is_on_blank()
   local line = vim.api.nvim_get_current_line()
   local col = vim.api.nvim_win_get_cursor(0)[2]
 
-  if line == '' then
-    return true;
-  end
+  if line == '' then return true end
 
-  if col < #line then
-    return line:sub(col + 1, col + 1):match('%s') ~= nil
-  end
+  if col < #line then return line:sub(col + 1, col + 1):match('%s') ~= nil end
+  return false
+end
+
+--- @return boolean
+local function is_nofile_buf()
+  local buftype = vim.bo.buftype
+  if buftype == 'nofile' or buftype == 'terminal' then return true end
   return false
 end
 
@@ -74,7 +67,7 @@ local function sibling(get_target)
 end
 
 local function go_outer(to_end)
-  local node = vim.treesitter.get_node()  ---@type TSNode?
+  local node = vim.treesitter.get_node() ---@type TSNode?
   if node == nil then return end
   local csrow, cscol, cerow, cecol = node:range() ---@type integer, integer, integer, integer
 
@@ -118,80 +111,36 @@ local function go_outer(to_end)
   end
 end
 
-local go_outer_end = utils.make_dot_repeat(
-  function()
-    go_outer(true)
-  end,
-  'v:lua.MiniFunctionsBlockAction.go_outer_end'
-)
+_G.MyAddonsBlockAction = M
 
-local go_outer_start = utils.make_dot_repeat(
-  function()
-    go_outer(false)
-  end,
-  'v:lua.MiniFunctionsBlockAction.go_outer_start'
-)
+--- @return function | nil
+M.go_outer_end = function()
+  if is_nofile_buf() then return nil end
+  return utils.make_dot_repeat(function() go_outer(true) end, 'v:lua.MyAddonsBlockAction.go_outer_end')
+end
 
-local go_next_sibling = utils.make_dot_repeat(
-  sibling(function(node) return node:next_sibling() or node end),
-  'v:lua.MiniFunctionsBlockAction.go_next_sibling'
-)
+--- @return function | nil
+M.go_outer_start = function()
+  if is_nofile_buf() then return nil end
+  return utils.make_dot_repeat(function() go_outer(false) end, 'v:lua.MyAddonsBlock.go_outer_start')
+end
 
-local go_previous_sibling = utils.make_dot_repeat(
-  sibling(function(node) return node:prev_sibling() or node end),
-  'v:lua.MiniFunctionsBlockAction.go_previous_sibling'
-)
-
-local keymap_opts = function(desc) return { silent = true, expr = true, noremap = true, buffer = true, desc = desc } end
-
-local function set_block_action_keymaps()
-  vim.keymap.set('n', config.keymaps.go_outer_start, go_outer_start, keymap_opts('Go To Outer Node'))
-  vim.keymap.set('n', config.keymaps.go_outer_end, go_outer_end, keymap_opts('Go To Outer Node End'))
-  vim.keymap.set(
-    'n',
-    config.keymaps.go_next_sibling,
-    go_next_sibling,
-    keymap_opts('Go To Next Sibling')
-  )
-  vim.keymap.set(
-    'n',
-    config.keymaps.go_previous_sibling,
-    go_previous_sibling,
-    keymap_opts('Go To Previous Sibling')
+--- @return function | nil
+M.go_next_sibling = function()
+  if is_nofile_buf() then return nil end
+  return utils.make_dot_repeat(
+    sibling(function(node) return node:next_sibling() or node end),
+    'v:lua.MyAddonsBlockAction.go_next_sibling'
   )
 end
 
-local autocmd_group = 'MiniFunctionsBlockAction'
---- @return boolean
-local function is_nofile_buf()
-  local buftype = vim.bo.buftype
-  if buftype == 'nofile' or buftype == 'terminal' then return true end
-  return false
+--- @return function | nil
+M.go_prev_sibling = function()
+  if is_nofile_buf() then return nil end
+  return utils.make_dot_repeat(
+    sibling(function(node) return node:prev_sibling() or node end),
+    'v:lua.MyAddonsBlockAction.go_previous_sibling'
+  )
 end
 
-M.go_outer_start = go_outer_start
-M.go_outer_end = go_outer_end
-M.go_next_sibling = go_next_sibling
-M.go_previous_sibling = go_previous_sibling
-
-M.setup = function(user_config)
-  config = vim.tbl_deep_extend('force', config, user_config or {})
-  _G.MiniFunctionsBlockAction = M
-  vim.api.nvim_create_augroup(autocmd_group, { clear = true })
-  vim.api.nvim_create_autocmd('BufEnter', {
-    group = autocmd_group,
-    pattern = '*',
-    callback = function()
-      if is_nofile_buf() then return end
-      set_block_action_keymaps()
-    end,
-  })
-end
-
-M.disable = function(bufnr)
-  _G.MiniFunctionsBlockAction = nil
-  vim.api.nvim_clear_autocmds({
-    group = autocmd_group,
-  })
-end
 return M

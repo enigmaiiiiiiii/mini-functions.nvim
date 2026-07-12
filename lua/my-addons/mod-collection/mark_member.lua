@@ -1,5 +1,5 @@
 local parsers = require('nvim-treesitter.parsers')
-local utils = require('mini-functions.utils')
+local utils = require('my-addons.utils')
 local M = {}
 
 ---@class ParentCheckOpt
@@ -19,7 +19,7 @@ local M = {}
 ---@field private_method? string
 ---@field nested_class? string
 
----@class MarkMemberConfig : MiniConfig
+---@class MarkMemberConfig : ModConfig
 ---@field member_group_marks MemberGroups
 ---@field auto_mark boolean
 
@@ -210,8 +210,6 @@ local mark_member_group = vim.api.nvim_create_augroup('mark_member', { clear = t
 
 M.setup = function(user_config)
   config = vim.tbl_deep_extend('force', config, user_config or {})
-  _G.MiniFunctionsAutoMark = M
-
   if config.auto_mark then
     vim.api.nvim_create_autocmd('BufEnter', {
       group = mark_member_group,
@@ -222,7 +220,6 @@ M.setup = function(user_config)
 end
 
 M.disable = function()
-  _G.MiniFunctionsAutoMark = nil
   vim.api.nvim_clear_autocmds({ group = mark_member_group })
 end
 

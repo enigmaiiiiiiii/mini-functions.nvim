@@ -1,0 +1,2 @@
+-- disable setup when installed
+-- require("my-addons").setup()
