@@ -67,7 +67,6 @@ local function sibling(get_target)
 end
 
 local function go_outer(to_end)
-  vim.print('original go_outer_end')
   local node = vim.treesitter.get_node() ---@type TSNode?
   if node == nil then return end
   local csrow, cscol, cerow, cecol = node:range() ---@type integer, integer, integer, integer
@@ -117,7 +116,6 @@ _G.MyAddonsBlockAction = M
 --- @return function | nil
 M.go_outer_end = function(motion)
   if is_nofile_buf() then return nil end
-  vim.print('go_outer_end')
   local dot_repeat = utils.make_dot_repeat(
     function() go_outer(true) end,
     'v:lua.MyAddonsBlockAction.go_outer_end'
