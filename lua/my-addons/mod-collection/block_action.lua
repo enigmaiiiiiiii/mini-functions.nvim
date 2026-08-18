@@ -67,6 +67,7 @@ local function sibling(get_target)
 end
 
 local function go_outer(to_end)
+  vim.print('original go_outer_end')
   local node = vim.treesitter.get_node() ---@type TSNode?
   if node == nil then return end
   local csrow, cscol, cerow, cecol = node:range() ---@type integer, integer, integer, integer
@@ -114,33 +115,44 @@ end
 _G.MyAddonsBlockAction = M
 
 --- @return function | nil
-M.go_outer_end = function()
+M.go_outer_end = function(motion)
   if is_nofile_buf() then return nil end
-  return utils.make_dot_repeat(function() go_outer(true) end, 'v:lua.MyAddonsBlockAction.go_outer_end')
+  vim.print('go_outer_end')
+  local dot_repeat = utils.make_dot_repeat(
+    function() go_outer(true) end,
+    'v:lua.MyAddonsBlockAction.go_outer_end'
+  )
+  dot_repeat(motion)
 end
 
 --- @return function | nil
-M.go_outer_start = function()
+M.go_outer_start = function(motion)
   if is_nofile_buf() then return nil end
-  return utils.make_dot_repeat(function() go_outer(false) end, 'v:lua.MyAddonsBlock.go_outer_start')
+  local dot_repeat = utils.make_dot_repeat(
+    function() go_outer(false) end,
+    'v:lua.MyAddonsBlock.go_outer_start'
+  )
+  dot_repeat(motion)
 end
 
 --- @return function | nil
-M.go_next_sibling = function()
+M.go_next_sibling = function(motion)
   if is_nofile_buf() then return nil end
-  return utils.make_dot_repeat(
+  local dot_repeat = utils.make_dot_repeat(
     sibling(function(node) return node:next_sibling() or node end),
     'v:lua.MyAddonsBlockAction.go_next_sibling'
   )
+  dot_repeat(motion)
 end
 
 --- @return function | nil
-M.go_prev_sibling = function()
+M.go_prev_sibling = function(motion)
   if is_nofile_buf() then return nil end
-  return utils.make_dot_repeat(
+  local dot_repeat = utils.make_dot_repeat(
     sibling(function(node) return node:prev_sibling() or node end),
     'v:lua.MyAddonsBlockAction.go_previous_sibling'
   )
+  dot_repeat(motion)
 end
 
 return M
